@@ -6,8 +6,8 @@ export default function AirQuality() {
   const [location, setLocation] = useState(null);
   const [address, setAddress] = useState("");
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true); // Added loading state
   const API_TOKEN = import.meta.env.VITE_API_TOKEN;
-
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -38,14 +38,19 @@ export default function AirQuality() {
             }
           } catch (err) {
             setError("Error fetching data.");
+          } finally {
+            setLoading(false); // Stop loading after data fetch
           }
         },
         (err) => {
           setError("Location access denied.");
-        }
+          setLoading(false);
+        },
+        { enableHighAccuracy: true, maximumAge: 0 } // Ensure fresh location
       );
     } else {
       setError("Geolocation is not supported by this browser.");
+      setLoading(false);
     }
   }, []);
 
@@ -63,12 +68,11 @@ export default function AirQuality() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6">
-      
-
-
       <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full text-center">
         <h2 className="text-2xl font-semibold mb-4">🌍 Air Quality Index (AQI)</h2>
-        {error ? (
+        {loading ? (
+          <p>Fetching location and AQI data...</p>
+        ) : error ? (
           <p className="text-red-500">{error}</p>
         ) : (
           <>
